@@ -17,20 +17,16 @@ public class HomeController : ControllerBase
     {
         context = contexto;
     }
-
+    
     //registrar datos
-    [HttpGet]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Curso>))]
-    public IEnumerable<Curso> Get()
-    {
-        return context.cursos
-                //.Include(x => x.comentariolista)
-                .ToList();
+    [HttpGet()]
+    public async Task<ActionResult<List<Curso>>> listar(){
+        return await context.cursos.ToListAsync();
     }
     
     //guardar datos
     [HttpPost]
-    public IActionResult Registrar(Curso data)
+    public async Task<ActionResult> Registrar(Curso data)
     {
         try
         {
@@ -45,7 +41,7 @@ public class HomeController : ControllerBase
 
         context.cursos.Add(curso);
 
-        var resultado = context.SaveChanges();
+        var resultado = await context.SaveChangesAsync();
         if (resultado > 0)
         {
             // Éxito en la inserción, devolver un OkObjectResult
@@ -62,11 +58,13 @@ public class HomeController : ControllerBase
             // Manejar la excepción, puedes registrarla o devolver un mensaje genérico
             return StatusCode(500, "Error interno del servidor");
         }
+
+
     }
 
     //Eliminar datos
     [HttpDelete("{id}")]
-    public IActionResult Eliminar(Guid id)
+    public async Task<ActionResult> Eliminar(Guid id)
     {
         try
         {
@@ -76,10 +74,10 @@ public class HomeController : ControllerBase
                 context.comentarios.Remove(comentariocurso);
             }
 
-            var cursoelimina = context.cursos.Find(id);
+            var cursoelimina = await context.cursos.FindAsync(id);
             context.cursos.Remove(cursoelimina!);
 
-            var resultado = context.SaveChanges();
+            var resultado = await context.SaveChangesAsync();
             if (resultado > 0)
             {
                 // Éxito en la inserción, devolver un OkObjectResult
@@ -99,9 +97,9 @@ public class HomeController : ControllerBase
 
     //Actualizar datos
     [HttpPut("{id}")]
-    public IActionResult Actualizar(Guid id, Curso data)
+    public async Task<ActionResult> Actualizar(Guid id, Curso data)
     {
-        var cursoactualiza = context.cursos.Find(id);
+        var cursoactualiza = await context.cursos.FindAsync(id);
         if(cursoactualiza == null)
         {
             return BadRequest("No se pudo encontrar el curso");
@@ -110,7 +108,7 @@ public class HomeController : ControllerBase
         cursoactualiza.Titulo = data.Titulo ?? cursoactualiza.Titulo;
         cursoactualiza.Descripcion = data.Descripcion ?? cursoactualiza.Descripcion;
 
-        var resultado = context.SaveChanges();
+        var resultado = await context.SaveChangesAsync();
             if (resultado > 0)
             {
                 // Éxito en la inserción, devolver un OkObjectResult
